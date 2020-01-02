@@ -27,7 +27,7 @@ wss.on('connection', function connection(ws) {
       console.log(payload);
       if (payload.type === 'JOIN_GAME') {
 
-        const playerInfo = registerPlayer(ws);
+        const playerInfo = registerPlayer(ws, payload);
         console.log(playerInfo);
         ws.send(JSON.stringify(playerInfo));
         if (playerInfo.player === 1) {
