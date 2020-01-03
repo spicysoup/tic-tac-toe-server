@@ -19,6 +19,14 @@ const wss = new WebSocketServer({
   server: httpsServer,
 });
 
+function announcePeerReady(playerInfo) {
+  const { sockets } = store[playerInfo.sessionID];
+  const alivePeers = sockets.filter((s) => s.readyState === 1);
+  if (alivePeers.length > 1) {
+    alivePeers.forEach((s) => s.send(JSON.stringify({type: 'PEER_READY'})));
+  }
+}
+
 wss.on('connection', function connection(ws) {
   ws.on('message', function incoming(message) {
     console.log('received: %s', message);
@@ -30,10 +38,8 @@ wss.on('connection', function connection(ws) {
         const playerInfo = registerPlayer(ws, payload);
         console.log(playerInfo);
         ws.send(JSON.stringify(playerInfo));
-        if (playerInfo.player === 1) {
-          console.log(store[playerInfo.sessionID]);
-          store[playerInfo.sessionID].sockets[0].send(JSON.stringify({type: 'PEER_ONLINE', playerInfo}));
-        }
+
+        announcePeerReady(playerInfo);
       } else {
         ws.send(Date.now())
       }

@@ -3,7 +3,8 @@ const type = 'GAME_JOINED';
 const registerPlayer = (socket, payload) => {
   console.log(store);
 
-  const {sessionID, player} = payload;
+  const { sessionID } = payload;
+  const player = parseInt(payload.player, 10);
   if (sessionID && player && store[sessionID]) {
     store[sessionID].sockets[player] = socket;
     return { type, sessionID, player };
