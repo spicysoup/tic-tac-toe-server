@@ -32,11 +32,16 @@ wss.on('connection', function connection(ws) {
     console.log('received: %s', message);
     try {
       const payload = JSON.parse(message);
-      console.log(payload);
+      // console.log(payload);
       if (payload.type === 'JOIN_GAME') {
 
+        console.log('Store before', store);
+
         const playerInfo = registerPlayer(ws, payload);
-        console.log(playerInfo);
+        console.log('Allocated session', playerInfo);
+
+        console.log('Store after', store);
+
         ws.send(JSON.stringify(playerInfo));
 
         announcePeerReady(playerInfo);
