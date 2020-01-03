@@ -2,6 +2,8 @@ const store = require('./store');
 
 const type = 'GAME_JOINED';
 
+const peer = (self) => 1 - self;
+
 const announcePeerReady = (playerInfo) => {
   const { sockets } = store[playerInfo.sessionID];
   const alivePeers = sockets.filter((s) => s.readyState === 1);
@@ -44,6 +46,13 @@ const dispatch = (socket, payload) => {
     socket.send(JSON.stringify(playerInfo));
 
     announcePeerReady(playerInfo);
+  }
+  if (payload.type === 'NEW_MOVE') {
+    const peerSocket = store[payload.sessionID].sockets[peer(payload.player)];
+    peerSocket.send(JSON.stringify({
+      ...payload,
+      type: 'PEER_MOVE',
+    }));
   } else {
     socket.send(Date.now());
   }
