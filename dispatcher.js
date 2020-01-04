@@ -34,6 +34,11 @@ const registerPlayer = (socket, payload) => {
   return { type, sessionID: newSessionID, player: 0 };
 };
 
+const sendToPeer = ({ sessionID, player }, data) => {
+  const peerSocket = store[sessionID].sockets[peer(player)];
+  peerSocket.send(JSON.stringify(data));
+};
+
 const dispatch = (socket, payload) => {
   if (payload.type === 'JOIN_GAME') {
     console.log('Store before', store);
@@ -46,16 +51,23 @@ const dispatch = (socket, payload) => {
     socket.send(JSON.stringify(playerInfo));
 
     announcePeerReady(playerInfo);
+    return;
   }
+
   if (payload.type === 'NEW_MOVE') {
-    const peerSocket = store[payload.sessionID].sockets[peer(payload.player)];
-    peerSocket.send(JSON.stringify({
+    sendToPeer(payload, {
       ...payload,
       type: 'PEER_MOVE',
-    }));
-  } else {
-    socket.send(Date.now());
+    });
+    return;
   }
+
+  if (payload.type === 'RESET_BOARD' || payload.type === 'SET_DIMENSION') {
+    sendToPeer(payload, payload);
+    return;
+  }
+
+  socket.send(Date.now());
 };
 
 module.exports = { dispatch };
